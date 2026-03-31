@@ -2,12 +2,16 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 import { AIProvider, AIRequest, AIResponse } from '../types';
 import { withRetry } from '../retry';
 
+const GMS_BASE_URL = 'https://gms.ssafy.io/gmsapi/generativelanguage.googleapis.com';
+
 export class GeminiProvider implements AIProvider {
   name = 'gemini';
   private client: GoogleGenerativeAI;
+  private baseUrl?: string;
 
-  constructor(apiKey: string) {
+  constructor(apiKey: string, options?: { baseUrl?: string }) {
     this.client = new GoogleGenerativeAI(apiKey);
+    this.baseUrl = options?.baseUrl;
   }
 
   async complete(request: AIRequest): Promise<AIResponse> {
@@ -15,10 +19,13 @@ export class GeminiProvider implements AIProvider {
   }
 
   async *stream(request: AIRequest): AsyncIterable<string> {
-    const genModel = this.client.getGenerativeModel({
-      model: request.model ?? 'gemini-2.0-flash',
-      systemInstruction: request.systemPrompt,
-    });
+    const genModel = this.client.getGenerativeModel(
+      {
+        model: request.model ?? 'gemini-2.5-flash',
+        systemInstruction: request.systemPrompt,
+      },
+      this.baseUrl ? { baseUrl: this.baseUrl } : undefined,
+    );
 
     const result = await genModel.generateContentStream({
       contents: [{ role: 'user', parts: [{ text: request.userPrompt }] }],
@@ -36,10 +43,13 @@ export class GeminiProvider implements AIProvider {
 
   private async doComplete(request: AIRequest): Promise<AIResponse> {
     try {
-      const genModel = this.client.getGenerativeModel({
-        model: request.model ?? 'gemini-2.0-flash',
-        systemInstruction: request.systemPrompt,
-      });
+      const genModel = this.client.getGenerativeModel(
+        {
+          model: request.model ?? 'gemini-2.5-flash',
+          systemInstruction: request.systemPrompt,
+        },
+        this.baseUrl ? { baseUrl: this.baseUrl } : undefined,
+      );
 
       const result = await genModel.generateContent({
         contents: [{ role: 'user', parts: [{ text: request.userPrompt }] }],
@@ -61,7 +71,7 @@ export class GeminiProvider implements AIProvider {
           input: response.usageMetadata?.promptTokenCount ?? 0,
           output: response.usageMetadata?.candidatesTokenCount ?? 0,
         },
-        model: request.model ?? 'gemini-2.0-flash',
+        model: request.model ?? 'gemini-2.5-flash',
       };
     } catch (error) {
       if (error instanceof Error) {
