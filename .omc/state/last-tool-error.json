@@ -1,0 +1,7 @@
+{
+  "tool_name": "Bash",
+  "tool_input_preview": "{\"command\":\"cd ~/projects/all-aplus && npx shadcn@latest init -d --style default --base-color neutral 2>&1\",\"timeout\":60000,\"description\":\"Initialize shadcn-ui\"}",
+  "error": "Exit code 1\nnpm warn exec The following package was not found and will be installed: shadcn@4.1.1\nerror: unknown option '--style'",
+  "timestamp": "2026-03-31T03:30:47.268Z",
+  "retry_count": 1
+}
