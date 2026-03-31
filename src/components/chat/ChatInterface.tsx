@@ -1,12 +1,13 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useChat } from '@/hooks/useChat';
+import { TemplatePicker } from './TemplatePicker';
 import type { Message } from '@/types/database';
 import type { ProviderName } from '@/lib/ai/types';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { Send, Square, Bot, User, FileText } from 'lucide-react';
+import { Send, Square, Bot, User, FileText, LayoutTemplate } from 'lucide-react';
 
 interface ChatInterfaceProps {
   conversationId: string;
@@ -28,6 +29,7 @@ export function ChatInterface({
   });
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+  const [showTemplates, setShowTemplates] = useState(false);
 
   useEffect(() => {
     scrollRef.current?.scrollTo({
@@ -40,6 +42,10 @@ export function ChatInterface({
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       sendMessage();
+    }
+    if (e.key === 'k' && (e.ctrlKey || e.metaKey)) {
+      e.preventDefault();
+      setShowTemplates((prev) => !prev);
     }
   };
 
@@ -121,9 +127,34 @@ export function ChatInterface({
         ))}
       </div>
 
+      {/* 템플릿 피커 */}
+      {showTemplates && (
+        <div className="px-4 pb-2">
+          <div className="max-w-3xl mx-auto">
+            <TemplatePicker
+              onSelect={(prompt) => {
+                setInput(prompt);
+                setShowTemplates(false);
+                inputRef.current?.focus();
+              }}
+              onClose={() => setShowTemplates(false)}
+            />
+          </div>
+        </div>
+      )}
+
       {/* 입력 영역 */}
       <div className="border-t bg-white p-4">
         <div className="max-w-3xl mx-auto flex gap-2">
+          <Button
+            variant="outline"
+            size="icon"
+            className="shrink-0 h-11 w-11 rounded-xl"
+            onClick={() => setShowTemplates(!showTemplates)}
+            title="학습 템플릿 (Ctrl+K)"
+          >
+            <LayoutTemplate className="h-4 w-4" />
+          </Button>
           <textarea
             ref={inputRef}
             value={input}
