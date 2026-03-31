@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { createProvider, getAppDefaultKey } from '@/lib/ai/provider-factory';
-import type { ProviderName } from '@/lib/ai/types';
+import { buildContext } from '@/lib/chat/context-builder';
+import type { ProviderName, StreamChunk } from '@/lib/ai/types';
 
 export async function POST(request: Request) {
   try {
@@ -47,18 +48,15 @@ export async function POST(request: Request) {
       .order('created_at', { ascending: true })
       .limit(20);
 
-    // 프롬프트
+    // context-builder로 시스템 프롬프트 + RAG 조립
     const course = conversation.courses as Record<string, unknown> | null;
-    const systemParts = [
-      '당신은 대학생의 AI 학습 비서 "올A+"입니다.',
-      '학생이 이해하기 쉽도록 친절하고 명확하게 설명해주세요.',
-      '한국어로 답변하되, 전공 용어는 영어를 병기해도 좋습니다.',
-    ];
-    if (course) {
-      systemParts.push(`\n## 현재 과목: ${course.name}`);
-      if (course.professor) systemParts.push(`담당 교수: ${course.professor}`);
-    }
-    const systemPrompt = systemParts.join('\n');
+    const { systemPrompt, sources } = await buildContext({
+      courseId: conversation.course_id,
+      courseName: (course?.name as string) || '과목',
+      professor: course?.professor as string | null,
+      systemContext: course?.system_context as string | null,
+      userMessage: message,
+    });
 
     const msgs = (history || []).map((m: { role: string; content: string }) =>
       `${m.role === 'user' ? '학생' : 'AI'}: ${m.content}`
@@ -79,13 +77,15 @@ export async function POST(request: Request) {
       temperature: 0.7,
     });
 
-    // AI 메시지 저장
+    // AI 메시지 저장 (출처 청크 ID 포함)
+    const contextChunks = sources.map((s) => s.id);
     await supabase.from('messages').insert({
       conversation_id: conversationId,
       role: 'assistant',
       content: result.content,
       provider: providerName,
       model: result.model,
+      context_chunks: contextChunks.length > 0 ? contextChunks : null,
     });
 
     // 제목 자동 생성
@@ -98,8 +98,16 @@ export async function POST(request: Request) {
     const encoder = new TextEncoder();
     const stream = new ReadableStream({
       start(controller) {
-        controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: 'chunk', content: result.content })}\n\n`));
-        controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: 'done' })}\n\n`));
+        const chunk: StreamChunk = { type: 'chunk', content: result.content };
+        controller.enqueue(encoder.encode(`data: ${JSON.stringify(chunk)}\n\n`));
+
+        if (sources.length > 0) {
+          const srcChunk: StreamChunk = { type: 'sources', sources };
+          controller.enqueue(encoder.encode(`data: ${JSON.stringify(srcChunk)}\n\n`));
+        }
+
+        const done: StreamChunk = { type: 'done' };
+        controller.enqueue(encoder.encode(`data: ${JSON.stringify(done)}\n\n`));
         controller.close();
       },
     });

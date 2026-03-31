@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useRef } from 'react';
 import type { Message } from '@/types/database';
-import type { ProviderName } from '@/lib/ai/types';
+import type { ProviderName, SourceReference } from '@/lib/ai/types';
 
 interface UseChatOptions {
   conversationId: string;
@@ -14,6 +14,7 @@ export function useChat({ conversationId, initialMessages = [], provider = 'gemi
   const [messages, setMessages] = useState<Message[]>(initialMessages);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [sources, setSources] = useState<Record<string, SourceReference[]>>({});
   const abortRef = useRef<AbortController | null>(null);
 
   const sendMessage = useCallback(async (content?: string) => {
@@ -94,6 +95,8 @@ export function useChat({ conversationId, initialMessages = [], provider = 'gemi
                   : m
               )
             );
+          } else if (json.type === 'sources' && json.sources) {
+            setSources((prev) => ({ ...prev, [assistantId]: json.sources }));
           }
         }
       }
@@ -117,5 +120,5 @@ export function useChat({ conversationId, initialMessages = [], provider = 'gemi
     setIsLoading(false);
   }, []);
 
-  return { messages, input, setInput, sendMessage, isLoading, stop };
+  return { messages, input, setInput, sendMessage, isLoading, stop, sources };
 }

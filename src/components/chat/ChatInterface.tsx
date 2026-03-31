@@ -6,7 +6,7 @@ import type { Message } from '@/types/database';
 import type { ProviderName } from '@/lib/ai/types';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { Send, Square, Bot, User } from 'lucide-react';
+import { Send, Square, Bot, User, FileText } from 'lucide-react';
 
 interface ChatInterfaceProps {
   conversationId: string;
@@ -21,7 +21,7 @@ export function ChatInterface({
   courseName,
   provider = 'gemini',
 }: ChatInterfaceProps) {
-  const { messages, input, setInput, sendMessage, isLoading, stop } = useChat({
+  const { messages, input, setInput, sendMessage, isLoading, stop, sources } = useChat({
     conversationId,
     initialMessages,
     provider,
@@ -96,6 +96,25 @@ export function ChatInterface({
                   <span className="animate-bounce" style={{ animationDelay: '0.1s' }}>.</span>
                   <span className="animate-bounce" style={{ animationDelay: '0.2s' }}>.</span>
                 </span>
+              )}
+              {/* 출처 표시 */}
+              {msg.role === 'assistant' && sources[msg.id] && sources[msg.id].length > 0 && (
+                <div className="mt-2 pt-2 border-t border-gray-100">
+                  <p className="text-xs text-gray-400 mb-1">참고 자료</p>
+                  <div className="flex flex-wrap gap-1">
+                    {sources[msg.id].map((src, i) => (
+                      <span
+                        key={src.id}
+                        className="inline-flex items-center gap-1 text-xs bg-gray-50 text-gray-600 px-2 py-0.5 rounded-md"
+                        title={src.contentPreview}
+                      >
+                        <FileText className="h-3 w-3" />
+                        [{i + 1}] {src.sourceFile}
+                        {src.page ? ` p.${src.page}` : ''}
+                      </span>
+                    ))}
+                  </div>
+                </div>
               )}
             </div>
           </div>
