@@ -94,6 +94,20 @@ export async function POST(request: Request) {
       await supabase.from('conversations').update({ title }).eq('id', conversationId);
     }
 
+    // 5턴마다 메모리 추출 (비동기, 응답 차단 안 함)
+    const msgCount = (history?.length ?? 0) + 2;
+    if (msgCount % 10 === 0 && msgCount >= 10) {
+      import('@/lib/memory/extractor').then(({ extractMemories }) =>
+        import('@/lib/memory/manager').then(({ saveMemories }) =>
+          extractMemories(history || []).then((extracted) => {
+            if (extracted.length > 0) {
+              saveMemories(conversation.course_id, user.id, conversationId, extracted).catch(console.error);
+            }
+          })
+        )
+      ).catch(console.error);
+    }
+
     // SSE 응답
     const encoder = new TextEncoder();
     const stream = new ReadableStream({

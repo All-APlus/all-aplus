@@ -1,4 +1,6 @@
 import { retrieveChunks, type RetrievedChunk } from '@/lib/rag/retriever';
+import { embed } from '@/lib/ai/embeddings';
+import { createClient } from '@/lib/supabase/server';
 import type { SourceReference } from '@/lib/ai/types';
 
 interface ContextResult {
@@ -29,6 +31,46 @@ export async function buildContext(options: {
   parts.push(`\n## 현재 과목: ${options.courseName}`);
   if (options.professor) parts.push(`담당 교수: ${options.professor}`);
   if (options.systemContext) parts.push(`\n## 과목 지시사항\n${options.systemContext}`);
+
+  // Memory: 관련 학습 기록 검색
+  try {
+    const queryEmbedding = await embed(options.userMessage);
+    const supabase = await createClient();
+
+    const { data: memories } = await supabase.rpc('match_course_memories', {
+      query_embedding: JSON.stringify(queryEmbedding),
+      target_course_id: options.courseId,
+      match_threshold: 0.4,
+      match_count: 3,
+    });
+
+    if (memories && memories.length > 0) {
+      parts.push('\n## 학습 기록');
+      for (const mem of memories as { memory_type: string; content: string }[]) {
+        const label = mem.memory_type === 'weak_area' ? '(취약)' : '';
+        parts.push(`- ${label} ${mem.content}`);
+      }
+    }
+
+    // 취약 영역 별도 강조
+    const { data: weakAreas } = await supabase
+      .from('course_memories')
+      .select('content')
+      .eq('course_id', options.courseId)
+      .eq('memory_type', 'weak_area')
+      .order('importance', { ascending: false })
+      .limit(3);
+
+    if (weakAreas && weakAreas.length > 0) {
+      parts.push('\n## 어려워하는 부분');
+      for (const w of weakAreas) {
+        parts.push(`- ${w.content}`);
+      }
+      parts.push('→ 이 주제는 특히 쉽게 설명해주세요.');
+    }
+  } catch (err) {
+    console.error('Memory context build error:', err);
+  }
 
   // RAG: 관련 문서 청크 검색
   let sources: SourceReference[] = [];
