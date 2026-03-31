@@ -8,6 +8,7 @@ import { Plus, MessageSquare, Pin } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { ko } from 'date-fns/locale';
 import { NewConversationButton } from '@/components/course/NewConversationButton';
+import { ProfessorAnalysis } from '@/components/course/ProfessorAnalysis';
 
 interface Props {
   params: Promise<{ courseId: string }>;
@@ -56,6 +57,16 @@ export default async function CoursePage({ params }: Props) {
         </div>
         <NewConversationButton courseId={courseId} />
       </div>
+
+      {/* 교수 성향 분석 */}
+      {(course as Course).professor && (
+        <div className="mb-6">
+          <ProfessorAnalysis
+            courseId={courseId}
+            professorName={(course as Course).professor}
+          />
+        </div>
+      )}
 
       {convList.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 text-center">

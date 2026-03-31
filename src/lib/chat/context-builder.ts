@@ -32,6 +32,32 @@ export async function buildContext(options: {
   if (options.professor) parts.push(`담당 교수: ${options.professor}`);
   if (options.systemContext) parts.push(`\n## 과목 지시사항\n${options.systemContext}`);
 
+  // 교수 성향 프로필
+  try {
+    const supabaseForProf = await createClient();
+    const { data: profProfile } = await supabaseForProf
+      .from('professor_profiles')
+      .select('research_areas, academic_stance, key_topics')
+      .eq('course_id', options.courseId)
+      .single();
+
+    if (profProfile) {
+      parts.push('\n## 담당 교수 성향');
+      if (profProfile.research_areas?.length) {
+        parts.push(`- 연구 분야: ${profProfile.research_areas.join(', ')}`);
+      }
+      if (profProfile.key_topics?.length) {
+        parts.push(`- 관심 주제: ${profProfile.key_topics.join(', ')}`);
+      }
+      if (profProfile.academic_stance) {
+        parts.push(`- 학문적 논조: ${profProfile.academic_stance}`);
+      }
+      parts.push('→ 퀴즈/리포트 생성 시 교수의 관점과 관심사를 반영하세요.');
+    }
+  } catch (err) {
+    console.error('Professor profile load error:', err);
+  }
+
   // Memory: 관련 학습 기록 검색
   try {
     const queryEmbedding = await embed(options.userMessage);
