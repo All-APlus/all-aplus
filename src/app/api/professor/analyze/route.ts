@@ -27,17 +27,17 @@ export async function POST(request: Request) {
     return Response.json({ error: '담당 교수가 설정되지 않았습니다' }, { status: 400 });
   }
 
-  // Semantic Scholar에서 논문 수집
-  const { papers } = await collectProfessorPapers(course.professor);
+  // KCI → Semantic Scholar 순서로 논문 수집
+  const { papers, sources } = await collectProfessorPapers(course.professor);
 
   if (papers.length === 0) {
     return Response.json({
-      error: `"${course.professor}" 교수의 논문을 찾을 수 없습니다. 이름을 영문으로 시도해보세요.`,
+      error: `"${course.professor}" 교수의 논문을 찾을 수 없습니다. KCI와 Semantic Scholar 모두 결과가 없습니다.`,
     }, { status: 404 });
   }
 
   // AI 분석
-  const analysis = await analyzeProfessor(course.professor, papers);
+  const analysis = await analyzeProfessor(course.professor, papers, sources);
 
   // DB 저장 (upsert)
   const { data, error } = await supabase

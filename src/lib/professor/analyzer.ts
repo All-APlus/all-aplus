@@ -1,5 +1,5 @@
 import { createProvider, getAppDefaultKey } from '@/lib/ai/provider-factory';
-import type { ScholarPaper } from './scholar-api';
+import type { ProfessorPaper } from './scholar-api';
 
 export interface ProfessorAnalysis {
   researchAreas: string[];
@@ -7,10 +7,15 @@ export interface ProfessorAnalysis {
   keyTopics: string[];
   papersAnalyzed: number;
   rawAnalysis: string;
+  dataSources: string[];
 }
 
 const ANALYSIS_PROMPT = `당신은 학술 연구 분석 전문가입니다.
-아래 교수의 논문 초록들을 분석하여 다음 정보를 추출하세요.
+아래 교수의 논문 데이터를 분석하여 연구 성향을 추출하세요.
+
+입력 데이터는 두 종류입니다:
+- KCI 논문: 제목 + 키워드 + 주제분야 (초록 없음)
+- Semantic Scholar 논문: 제목 + 초록 (키워드 없음)
 
 반드시 아래 JSON 형식으로만 응답하세요:
 {
@@ -20,21 +25,26 @@ const ANALYSIS_PROMPT = `당신은 학술 연구 분석 전문가입니다.
 }
 
 분석 기준:
-- research_areas: 주요 연구 분야 (3~5개)
+- research_areas: 주요 연구 분야 (3~5개, 한국어)
 - academic_stance: 선호하는 방법론, 이론적 관점, 연구 성향
-- key_topics: 논문에서 반복적으로 등장하는 구체적 주제/키워드 (5~10개)`;
+- key_topics: 논문에서 반복적으로 등장하는 구체적 주제/키워드 (5~10개, 한국어 우선)`;
 
 /**
- * 논문 초록으로 교수 성향 AI 분석
+ * 논문 데이터로 교수 성향 AI 분석
  */
 export async function analyzeProfessor(
   professorName: string,
-  papers: ScholarPaper[],
+  papers: ProfessorPaper[],
+  dataSources: string[],
 ): Promise<ProfessorAnalysis> {
-  const abstracts = papers
-    .slice(0, 15)
-    .map((p, i) => `[${i + 1}] "${p.title}" (${p.year})\n${p.abstract}`)
-    .join('\n\n');
+  const paperTexts = papers.slice(0, 20).map((p, i) => {
+    const parts = [`[${i + 1}] "${p.title}" (${p.year || '연도 미상'})`];
+    if (p.keywords.length > 0) parts.push(`키워드: ${p.keywords.join(', ')}`);
+    if (p.subjectArea) parts.push(`분야: ${p.subjectArea}`);
+    if (p.abstract) parts.push(`초록: ${p.abstract}`);
+    parts.push(`출처: ${p.source === 'kci' ? 'KCI(국내)' : 'Semantic Scholar(해외)'}`);
+    return parts.join('\n');
+  }).join('\n\n');
 
   const apiKey = getAppDefaultKey('gemini');
   if (!apiKey) throw new Error('AI API 키가 설정되지 않았습니다');
@@ -42,7 +52,7 @@ export async function analyzeProfessor(
   const provider = await createProvider('gemini', apiKey);
   const result = await provider.complete({
     systemPrompt: ANALYSIS_PROMPT,
-    userPrompt: `교수명: ${professorName}\n\n논문 초록:\n${abstracts}`,
+    userPrompt: `교수명: ${professorName}\n수집 소스: ${dataSources.join(', ')}\n\n논문 데이터:\n${paperTexts}`,
     maxTokens: 1024,
     temperature: 0.3,
   });
@@ -60,6 +70,7 @@ export async function analyzeProfessor(
       keyTopics: parsed.key_topics || [],
       papersAnalyzed: papers.length,
       rawAnalysis: result.content,
+      dataSources,
     };
   } catch {
     return {
@@ -68,6 +79,7 @@ export async function analyzeProfessor(
       keyTopics: [],
       papersAnalyzed: papers.length,
       rawAnalysis: result.content,
+      dataSources,
     };
   }
 }
