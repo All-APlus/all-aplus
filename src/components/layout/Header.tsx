@@ -3,7 +3,8 @@
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { Button } from '@/components/ui/button';
-import { LogOut, Menu } from 'lucide-react';
+import { LogOut, Menu, Moon, Sun } from 'lucide-react';
+import { useTheme } from 'next-themes';
 
 interface HeaderProps {
   email?: string;
@@ -13,6 +14,7 @@ interface HeaderProps {
 
 export function Header({ email, displayName, onToggleSidebar }: HeaderProps) {
   const router = useRouter();
+  const { theme, setTheme } = useTheme();
 
   const handleLogout = async () => {
     const supabase = createClient();
@@ -22,7 +24,7 @@ export function Header({ email, displayName, onToggleSidebar }: HeaderProps) {
   };
 
   return (
-    <header className="h-14 border-b bg-white flex items-center justify-between px-4 shrink-0">
+    <header className="h-14 border-b bg-background flex items-center justify-between px-4 shrink-0">
       <div className="flex items-center gap-3">
         <Button
           variant="ghost"
@@ -38,6 +40,15 @@ export function Header({ email, displayName, onToggleSidebar }: HeaderProps) {
         <span className="text-sm text-muted-foreground hidden sm:block">
           {displayName || email}
         </span>
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+          title="테마 전환"
+        >
+          <Sun className="h-4 w-4 rotate-0 scale-100 transition-transform dark:-rotate-90 dark:scale-0" />
+          <Moon className="absolute h-4 w-4 rotate-90 scale-0 transition-transform dark:rotate-0 dark:scale-100" />
+        </Button>
         <Button variant="ghost" size="icon" onClick={handleLogout} title="로그아웃">
           <LogOut className="h-4 w-4" />
         </Button>

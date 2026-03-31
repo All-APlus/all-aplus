@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import type { Course } from '@/types/database';
-import { BookOpen, Settings, MessageSquare } from 'lucide-react';
+import { BookOpen, Settings, MessageSquare, FileText, Brain } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface SidebarProps {
@@ -26,7 +26,7 @@ export function Sidebar({ courses, open, onClose }: SidebarProps) {
       )}
       <aside
         className={cn(
-          'fixed md:static inset-y-0 left-0 z-40 w-60 bg-white border-r flex flex-col transition-transform md:translate-x-0',
+          'fixed md:static inset-y-0 left-0 z-40 w-60 bg-background border-r flex flex-col transition-transform md:translate-x-0',
           open ? 'translate-x-0' : '-translate-x-full'
         )}
       >
@@ -58,25 +58,56 @@ export function Sidebar({ courses, open, onClose }: SidebarProps) {
           </div>
 
           {courses.map((course) => {
-            const isActive = pathname.startsWith(`/courses/${course.id}`);
+            const courseBase = `/courses/${course.id}`;
+            const isActive = pathname.startsWith(courseBase);
             return (
-              <Link
-                key={course.id}
-                href={`/courses/${course.id}`}
-                onClick={onClose}
-                className={cn(
-                  'flex items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors',
-                  isActive
-                    ? 'bg-indigo-50 text-indigo-700 font-medium'
-                    : 'text-muted-foreground hover:bg-muted'
+              <div key={course.id}>
+                <Link
+                  href={courseBase}
+                  onClick={onClose}
+                  className={cn(
+                    'flex items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors',
+                    isActive
+                      ? 'bg-indigo-50 text-indigo-700 font-medium'
+                      : 'text-muted-foreground hover:bg-muted'
+                  )}
+                >
+                  <span
+                    className="h-2.5 w-2.5 rounded-full shrink-0"
+                    style={{ backgroundColor: course.color || '#6366f1' }}
+                  />
+                  <span className="truncate">{course.name}</span>
+                </Link>
+                {isActive && (
+                  <div className="ml-5 pl-3 border-l border-gray-200 space-y-0.5 mt-0.5 mb-1">
+                    {[
+                      { href: courseBase, icon: MessageSquare, label: '대화', exact: true },
+                      { href: `${courseBase}/documents`, icon: FileText, label: '학습 자료' },
+                      { href: `${courseBase}/memory`, icon: Brain, label: '학습 기록' },
+                    ].map((item) => {
+                      const subActive = item.exact
+                        ? pathname === item.href || pathname.startsWith(`${item.href}/chat`)
+                        : pathname.startsWith(item.href);
+                      return (
+                        <Link
+                          key={item.href}
+                          href={item.href}
+                          onClick={onClose}
+                          className={cn(
+                            'flex items-center gap-2 rounded-md px-2 py-1.5 text-xs transition-colors',
+                            subActive
+                              ? 'text-indigo-600 font-medium'
+                              : 'text-muted-foreground hover:text-foreground'
+                          )}
+                        >
+                          <item.icon className="h-3.5 w-3.5" />
+                          {item.label}
+                        </Link>
+                      );
+                    })}
+                  </div>
                 )}
-              >
-                <span
-                  className="h-2.5 w-2.5 rounded-full shrink-0"
-                  style={{ backgroundColor: course.color || '#6366f1' }}
-                />
-                <span className="truncate">{course.name}</span>
-              </Link>
+              </div>
             );
           })}
 

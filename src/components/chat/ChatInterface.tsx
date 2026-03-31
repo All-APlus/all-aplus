@@ -93,7 +93,7 @@ export function ChatInterface({
                 'rounded-2xl px-4 py-2.5 text-sm leading-relaxed whitespace-pre-wrap',
                 msg.role === 'user'
                   ? 'bg-indigo-600 text-white'
-                  : 'bg-white border shadow-sm'
+                  : 'bg-card border shadow-sm'
               )}
             >
               {msg.content || (
@@ -144,7 +144,7 @@ export function ChatInterface({
       )}
 
       {/* 입력 영역 */}
-      <div className="border-t bg-white p-4">
+      <div className="border-t bg-background p-4">
         <div className="max-w-3xl mx-auto flex gap-2">
           <Button
             variant="outline"
