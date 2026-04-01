@@ -10,6 +10,9 @@ const geistMono = Geist_Mono({ subsets: ['latin'], variable: '--font-mono' });
 export const metadata: Metadata = {
   title: '올A+ | AI 학습 비서',
   description: '과목별 AI 학습 비서로 올A+ 받자. RAG 기반 자료 검색, 지속 메모리, 교수 성향 분석.',
+  icons: {
+    icon: '/favicon.svg',
+  },
 };
 
 export default function RootLayout({

@@ -125,7 +125,7 @@ export default function ApiKeysPage() {
             <Card key={key.id}>
               <CardContent className="flex items-center justify-between py-3 px-4">
                 <div className="flex items-center gap-3">
-                  <Key className="h-5 w-5 text-gray-400" />
+                  <Key className="h-5 w-5 text-muted-foreground" />
                   <div>
                     <div className="flex items-center gap-2">
                       <span className="text-sm font-medium capitalize">{key.provider}</span>
@@ -142,7 +142,7 @@ export default function ApiKeysPage() {
                   variant="ghost"
                   size="sm"
                   onClick={() => deleteKey(key.id)}
-                  className="h-8 w-8 p-0 text-gray-400 hover:text-red-500"
+                  className="h-8 w-8 p-0 text-muted-foreground hover:text-red-500"
                 >
                   <Trash2 className="h-4 w-4" />
                 </Button>

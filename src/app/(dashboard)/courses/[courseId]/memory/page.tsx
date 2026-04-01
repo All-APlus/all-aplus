@@ -145,12 +145,12 @@ export default function MemoryPage() {
       {/* 메모리 목록 */}
       {loading ? (
         <div className="flex justify-center py-16">
-          <Loader2 className="h-8 w-8 animate-spin text-gray-300" />
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
         </div>
       ) : memories.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-16 text-center">
-          <div className="h-16 w-16 rounded-full bg-gray-50 flex items-center justify-center mb-4">
-            <Brain className="h-8 w-8 text-gray-300" />
+          <div className="h-16 w-16 rounded-full bg-muted flex items-center justify-center mb-4">
+            <Brain className="h-8 w-8 text-muted-foreground" />
           </div>
           <h3 className="text-lg font-semibold mb-1">아직 학습 기록이 없습니다</h3>
           <p className="text-sm text-muted-foreground">
@@ -162,7 +162,7 @@ export default function MemoryPage() {
           {memories.map((mem) => {
             const config = TYPE_CONFIG[mem.memory_type as MemoryType];
             const Icon = config?.icon ?? Brain;
-            const colorClass = config?.color ?? 'text-gray-600 bg-gray-50';
+            const colorClass = config?.color ?? 'text-gray-600 bg-muted';
 
             return (
               <Card key={mem.id}>
@@ -176,7 +176,7 @@ export default function MemoryPage() {
                         <span className="text-xs font-medium text-muted-foreground">
                           {config?.label}
                         </span>
-                        <span className="text-xs text-gray-300">
+                        <span className="text-xs text-muted-foreground">
                           중요도 {Math.round(mem.importance * 100)}%
                         </span>
                       </div>

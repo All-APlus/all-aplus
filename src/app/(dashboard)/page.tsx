@@ -4,7 +4,7 @@ import type { Course } from '@/types/database';
 import { CourseCard } from '@/components/course/CourseCard';
 import { CreateCourseDialog } from '@/components/course/CreateCourseDialog';
 import { StatsCards } from '@/components/dashboard/StatsCards';
-import { BookOpen } from 'lucide-react';
+import { BookOpen, Sparkles, FileText, Brain } from 'lucide-react';
 
 export default async function DashboardPage() {
   const supabase = await createClient();
@@ -35,17 +35,35 @@ export default async function DashboardPage() {
       {courseList.length > 0 && <StatsCards />}
 
       {courseList.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-20 text-center">
-          <div className="h-16 w-16 rounded-full bg-indigo-50 flex items-center justify-center mb-4">
-            <BookOpen className="h-8 w-8 text-indigo-400" />
+        <div className="flex flex-col items-center justify-center py-16 text-center">
+          <div className="h-20 w-20 rounded-2xl bg-gradient-to-br from-indigo-100 to-violet-100 dark:from-indigo-900 dark:to-violet-900 flex items-center justify-center mb-6">
+            <Sparkles className="h-10 w-10 text-indigo-500" />
           </div>
-          <h3 className="text-lg font-semibold mb-2">아직 등록된 과목이 없어요</h3>
-          <p className="text-sm text-muted-foreground mb-6 max-w-sm">
+          <h3 className="text-xl font-bold mb-2">학기를 시작해볼까요?</h3>
+          <p className="text-sm text-muted-foreground mb-8 max-w-sm leading-relaxed">
             과목을 추가하면 AI가 학기 전체를 함께 합니다.
-            <br />
-            자료 업로드, 질문, 시험 대비까지!
           </p>
           <CreateCourseDialog />
+          <div className="grid grid-cols-3 gap-6 mt-12 max-w-md">
+            <div className="flex flex-col items-center gap-2">
+              <div className="h-10 w-10 rounded-lg bg-blue-50 dark:bg-blue-950 flex items-center justify-center">
+                <FileText className="h-5 w-5 text-blue-500" />
+              </div>
+              <span className="text-xs text-muted-foreground">자료 업로드</span>
+            </div>
+            <div className="flex flex-col items-center gap-2">
+              <div className="h-10 w-10 rounded-lg bg-emerald-50 dark:bg-emerald-950 flex items-center justify-center">
+                <BookOpen className="h-5 w-5 text-emerald-500" />
+              </div>
+              <span className="text-xs text-muted-foreground">AI 질문</span>
+            </div>
+            <div className="flex flex-col items-center gap-2">
+              <div className="h-10 w-10 rounded-lg bg-violet-50 dark:bg-violet-950 flex items-center justify-center">
+                <Brain className="h-5 w-5 text-violet-500" />
+              </div>
+              <span className="text-xs text-muted-foreground">시험 대비</span>
+            </div>
+          </div>
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">

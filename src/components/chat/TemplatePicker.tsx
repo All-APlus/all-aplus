@@ -74,7 +74,7 @@ export function TemplatePicker({ onSelect, onClose }: TemplatePickerProps) {
     .every((v) => varValues[v.name]?.trim());
 
   return (
-    <div className="border rounded-xl bg-white shadow-lg max-h-[500px] overflow-hidden flex flex-col">
+    <div className="border rounded-xl bg-card shadow-lg max-h-[500px] overflow-hidden flex flex-col">
       {/* 헤더 */}
       <div className="flex items-center justify-between px-4 py-3 border-b">
         <h3 className="text-sm font-semibold">학습 템플릿</h3>

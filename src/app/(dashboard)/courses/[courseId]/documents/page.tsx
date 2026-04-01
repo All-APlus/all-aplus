@@ -19,7 +19,7 @@ import { Input } from '@/components/ui/input';
 import type { Document } from '@/types/database';
 
 const STATUS_MAP = {
-  pending: { label: '대기 중', icon: Loader2, color: 'text-gray-400', spin: true },
+  pending: { label: '대기 중', icon: Loader2, color: 'text-muted-foreground', spin: true },
   processing: { label: '처리 중', icon: Loader2, color: 'text-blue-500', spin: true },
   completed: { label: '완료', icon: CheckCircle, color: 'text-green-500', spin: false },
   failed: { label: '실패', icon: XCircle, color: 'text-red-500', spin: false },
@@ -150,7 +150,7 @@ export default function DocumentsPage() {
         className={`
           border-2 border-dashed rounded-lg p-8 text-center cursor-pointer
           transition-colors mb-6
-          ${isDragActive ? 'border-indigo-500 bg-indigo-50' : 'border-gray-300 hover:border-gray-400'}
+          ${isDragActive ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-950' : 'border-border hover:border-muted-foreground'}
           ${uploading ? 'opacity-50 cursor-not-allowed' : ''}
         `}
       >
@@ -159,7 +159,7 @@ export default function DocumentsPage() {
           {uploading ? (
             <Loader2 className="h-10 w-10 text-indigo-500 animate-spin" />
           ) : (
-            <Upload className="h-10 w-10 text-gray-400" />
+            <Upload className="h-10 w-10 text-muted-foreground" />
           )}
           <p className="text-sm font-medium">
             {uploading
@@ -210,7 +210,7 @@ export default function DocumentsPage() {
       {/* 문서 목록 */}
       {documents.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-16 text-center">
-          <div className="h-16 w-16 rounded-full bg-gray-50 flex items-center justify-center mb-4">
+          <div className="h-16 w-16 rounded-full bg-muted flex items-center justify-center mb-4">
             <FileText className="h-8 w-8 text-gray-300" />
           </div>
           <h3 className="text-lg font-semibold mb-1">아직 업로드된 자료가 없습니다</h3>
@@ -228,7 +228,7 @@ export default function DocumentsPage() {
               <Card key={doc.id}>
                 <CardContent className="flex items-center justify-between py-3 px-4">
                   <div className="flex items-center gap-3 min-w-0">
-                    <FileIcon className="h-5 w-5 text-gray-400 shrink-0" />
+                    <FileIcon className="h-5 w-5 text-muted-foreground shrink-0" />
                     <div className="min-w-0">
                       <p className="text-sm font-medium truncate">{doc.file_name}</p>
                       <div className="flex items-center gap-2 text-xs text-muted-foreground">
@@ -253,7 +253,7 @@ export default function DocumentsPage() {
                       variant="ghost"
                       size="sm"
                       onClick={() => deleteDocument(doc.id)}
-                      className="h-8 w-8 p-0 text-gray-400 hover:text-red-500"
+                      className="h-8 w-8 p-0 text-muted-foreground hover:text-red-500"
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>

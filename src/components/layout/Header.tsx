@@ -34,7 +34,7 @@ export function Header({ email, displayName, onToggleSidebar }: HeaderProps) {
         >
           <Menu className="h-5 w-5" />
         </Button>
-        <h1 className="text-xl font-bold text-indigo-600">올A+</h1>
+        <h1 className="text-xl font-extrabold bg-gradient-to-r from-indigo-600 to-violet-500 bg-clip-text text-transparent">올A+</h1>
       </div>
       <div className="flex items-center gap-3">
         <span className="text-sm text-muted-foreground hidden sm:block">
