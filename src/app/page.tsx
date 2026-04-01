@@ -8,7 +8,7 @@ export default async function LandingPage() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
-  if (user) redirect('/courses');
+  if (user) redirect('/dashboard');
 
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">

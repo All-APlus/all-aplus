@@ -29,7 +29,7 @@ export default function CourseError({
       </p>
       <div className="flex gap-3">
         <Link
-          href="/"
+          href="/dashboard"
           className="inline-flex items-center justify-center rounded-md border bg-background px-4 py-2 text-sm font-medium hover:bg-muted transition-colors"
         >
           내 과목으로

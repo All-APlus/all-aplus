@@ -1,7 +1,7 @@
 {
-  "tool_name": "Bash",
-  "tool_input_preview": "{\"command\":\"cd ~/projects/all-aplus && npx shadcn@latest init -d --style default --base-color neutral 2>&1\",\"timeout\":60000,\"description\":\"Initialize shadcn-ui\"}",
-  "error": "Exit code 1\nnpm warn exec The following package was not found and will be installed: shadcn@4.1.1\nerror: unknown option '--style'",
-  "timestamp": "2026-03-31T03:30:47.268Z",
+  "tool_name": "mcp__claude-in-chrome__computer",
+  "tool_input_preview": "{\"action\":\"wait\",\"duration\":30,\"tabId\":1772061538}",
+  "error": "Failed to execute action: Duration cannot exceed 10 seconds",
+  "timestamp": "2026-04-01T06:26:22.523Z",
   "retry_count": 1
 }

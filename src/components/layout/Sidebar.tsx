@@ -36,7 +36,7 @@ export function Sidebar({ courses, open, collapsed, onClose, onToggleCollapse }:
       >
         <div className={cn('border-b flex items-center', collapsed ? 'justify-center p-3' : 'justify-between p-4')}>
           {!collapsed && (
-            <Link href="/" className="text-lg font-extrabold bg-gradient-to-r from-indigo-600 to-violet-500 bg-clip-text text-transparent" onClick={onClose}>
+            <Link href="/dashboard" className="text-lg font-extrabold bg-gradient-to-r from-indigo-600 to-violet-500 bg-clip-text text-transparent" onClick={onClose}>
               올A+
             </Link>
           )}
@@ -53,7 +53,7 @@ export function Sidebar({ courses, open, collapsed, onClose, onToggleCollapse }:
 
         <nav className="flex-1 overflow-y-auto p-2 space-y-1">
           <Link
-            href="/"
+            href="/dashboard"
             onClick={onClose}
             className={cn(
               'flex items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors',

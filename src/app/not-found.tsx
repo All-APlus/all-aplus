@@ -12,7 +12,7 @@ export default function NotFound() {
           요청하신 페이지가 존재하지 않거나 이동되었습니다.
         </p>
         <Link
-          href="/"
+          href="/dashboard"
           className="inline-flex items-center rounded-lg bg-primary px-6 py-3 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
         >
           홈으로 돌아가기
