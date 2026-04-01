@@ -7,6 +7,12 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-5-blue)](https://www.typescriptlang.org)
 [![Supabase](https://img.shields.io/badge/Supabase-pgvector-green)](https://supabase.com)
 
+## 스크린샷
+
+| 대시보드 | 과목 상세 | AI 채팅 |
+|:---:|:---:|:---:|
+| ![대시보드](docs/screenshots/dashboard.png) | ![과목 상세](docs/screenshots/course.png) | ![AI 채팅](docs/screenshots/chat.png) |
+
 ## 왜 만들었나
 
 ChatGPT, Claude 같은 AI 챗봇으로 공부할 때 반복되는 불편함이 있습니다:
