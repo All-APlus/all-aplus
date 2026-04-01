@@ -7,6 +7,12 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-5-blue)](https://www.typescriptlang.org)
 [![Supabase](https://img.shields.io/badge/Supabase-pgvector-green)](https://supabase.com)
 
+## 데모
+
+![올A+ 데모](public/screenshots/demo.gif)
+
+> 과목 선택 → AI 채팅 → 정규화 개념 설명까지 한 흐름으로 보여줍니다.
+
 ## 스크린샷
 
 | 대시보드 | 과목 상세 | AI 채팅 |

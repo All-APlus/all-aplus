@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { BookOpen, MessageSquare, FileText, Brain, ClipboardList, Settings } from 'lucide-react';
+import { BookOpen, MessageSquare, FileText, Brain, ClipboardList, Settings, GitFork } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface BottomNavProps {
@@ -20,6 +20,7 @@ export function BottomNav({ courseId }: BottomNavProps) {
         { href: courseBase, icon: MessageSquare, label: '대화', exact: true },
         { href: `${courseBase}/documents`, icon: FileText, label: '자료' },
         { href: `${courseBase}/memory`, icon: Brain, label: '기록' },
+        { href: `${courseBase}/mindmap`, icon: GitFork, label: '맵' },
         { href: `${courseBase}/quiz`, icon: ClipboardList, label: '퀴즈' },
       ]
     : [

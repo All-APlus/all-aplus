@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import type { Course } from '@/types/database';
-import { BookOpen, Settings, MessageSquare, FileText, Brain, ClipboardList, Layers, PanelLeftClose, PanelLeft } from 'lucide-react';
+import { BookOpen, Settings, MessageSquare, FileText, Brain, ClipboardList, Layers, PanelLeftClose, PanelLeft, GitFork } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 
@@ -107,6 +107,7 @@ export function Sidebar({ courses, open, collapsed, onClose, onToggleCollapse }:
                       { href: courseBase, icon: MessageSquare, label: '대화', exact: true },
                       { href: `${courseBase}/documents`, icon: FileText, label: '학습 자료' },
                       { href: `${courseBase}/memory`, icon: Brain, label: '학습 기록' },
+                      { href: `${courseBase}/mindmap`, icon: GitFork, label: '마인드맵' },
                       { href: `${courseBase}/quiz`, icon: ClipboardList, label: '퀴즈' },
                       { href: `${courseBase}/flashcards`, icon: Layers, label: '플래시카드' },
                     ].map((item) => {

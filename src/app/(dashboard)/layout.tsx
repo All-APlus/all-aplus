@@ -18,6 +18,7 @@ const SIDEBAR_COLLAPSED_KEY = 'all-aplus-sidebar-collapsed';
 const PAGE_LABELS: Record<string, string> = {
   documents: '학습 자료',
   memory: '학습 기록',
+  mindmap: '마인드맵',
   quiz: '퀴즈',
   flashcards: '플래시카드',
   chat: '대화',
