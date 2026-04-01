@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import type { Course } from '@/types/database';
-import { BookOpen, Settings, MessageSquare, FileText, Brain } from 'lucide-react';
+import { BookOpen, Settings, MessageSquare, FileText, Brain, ClipboardList, Layers } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface SidebarProps {
@@ -84,6 +84,8 @@ export function Sidebar({ courses, open, onClose }: SidebarProps) {
                       { href: courseBase, icon: MessageSquare, label: '대화', exact: true },
                       { href: `${courseBase}/documents`, icon: FileText, label: '학습 자료' },
                       { href: `${courseBase}/memory`, icon: Brain, label: '학습 기록' },
+                      { href: `${courseBase}/quiz`, icon: ClipboardList, label: '퀴즈' },
+                      { href: `${courseBase}/flashcards`, icon: Layers, label: '플래시카드' },
                     ].map((item) => {
                       const subActive = item.exact
                         ? pathname === item.href || pathname.startsWith(`${item.href}/chat`)

@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation';
 import type { Course } from '@/types/database';
 import { CourseCard } from '@/components/course/CourseCard';
 import { CreateCourseDialog } from '@/components/course/CreateCourseDialog';
+import { StatsCards } from '@/components/dashboard/StatsCards';
 import { BookOpen } from 'lucide-react';
 
 export default async function DashboardPage() {
@@ -30,6 +31,8 @@ export default async function DashboardPage() {
         </div>
         <CreateCourseDialog />
       </div>
+
+      {courseList.length > 0 && <StatsCards />}
 
       {courseList.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 text-center">

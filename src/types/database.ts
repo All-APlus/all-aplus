@@ -133,6 +133,52 @@ export interface ApiKey {
   created_at: string;
 }
 
+export interface Quiz {
+  id: string;
+  course_id: string;
+  user_id: string;
+  title: string;
+  question_count: number;
+  score: number | null;
+  total: number | null;
+  created_at: string;
+}
+
+export interface QuizQuestion {
+  id: string;
+  quiz_id: string;
+  question_type: 'multiple_choice' | 'short_answer';
+  question: string;
+  options: string[] | null;
+  correct_answer: string;
+  explanation: string | null;
+  user_answer: string | null;
+  is_correct: boolean | null;
+  sort_order: number;
+}
+
+export interface FlashcardDeck {
+  id: string;
+  course_id: string;
+  user_id: string;
+  title: string;
+  card_count: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface Flashcard {
+  id: string;
+  deck_id: string;
+  front: string;
+  back: string;
+  ease_factor: number;
+  interval_days: number;
+  repetitions: number;
+  next_review_at: string;
+  created_at: string;
+}
+
 export interface DepartmentPreset {
   id: string;
   name_ko: string;

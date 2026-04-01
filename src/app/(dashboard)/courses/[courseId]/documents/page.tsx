@@ -13,7 +13,9 @@ import {
   XCircle,
   Loader2,
   File as FileIcon,
+  PlayCircle,
 } from 'lucide-react';
+import { Input } from '@/components/ui/input';
 import type { Document } from '@/types/database';
 
 const STATUS_MAP = {
@@ -34,6 +36,8 @@ export default function DocumentsPage() {
   const [documents, setDocuments] = useState<Document[]>([]);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [youtubeUrl, setYoutubeUrl] = useState('');
+  const [youtubeLoading, setYoutubeLoading] = useState(false);
 
   const fetchDocuments = useCallback(async () => {
     const res = await fetch(`/api/documents?courseId=${courseId}`);
@@ -91,6 +95,31 @@ export default function DocumentsPage() {
     }
   };
 
+  const handleYouTube = async () => {
+    if (!youtubeUrl.trim()) return;
+    setError(null);
+    setYoutubeLoading(true);
+
+    try {
+      const res = await fetch('/api/documents/youtube', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url: youtubeUrl.trim(), courseId }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.error || 'YouTube 자막 추출 실패');
+      } else {
+        setYoutubeUrl('');
+        fetchDocuments();
+      }
+    } catch {
+      setError('YouTube 처리 중 오류가 발생했습니다');
+    } finally {
+      setYoutubeLoading(false);
+    }
+  };
+
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
     accept: {
@@ -110,7 +139,7 @@ export default function DocumentsPage() {
         <div>
           <h2 className="text-2xl font-bold">학습 자료</h2>
           <p className="text-sm text-muted-foreground mt-1">
-            PDF, DOCX, PPTX, TXT 파일을 업로드하면 AI가 자료를 기반으로 답변합니다
+            파일 업로드 또는 YouTube URL로 자료를 추가하면 AI가 내용을 기반으로 답변합니다
           </p>
         </div>
       </div>
@@ -143,6 +172,33 @@ export default function DocumentsPage() {
             PDF, DOCX, PPTX, TXT, MD (최대 10MB)
           </p>
         </div>
+      </div>
+
+      {/* YouTube URL 입력 */}
+      <div className="flex items-center gap-2 mb-6">
+        <div className="flex items-center gap-2 flex-1">
+          <PlayCircle className="h-5 w-5 text-red-500 shrink-0" />
+          <Input
+            type="url"
+            placeholder="YouTube URL을 붙여넣으세요 (자막 있는 영상)"
+            value={youtubeUrl}
+            onChange={(e) => setYoutubeUrl(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && handleYouTube()}
+            disabled={youtubeLoading}
+            className="flex-1"
+          />
+        </div>
+        <Button
+          onClick={handleYouTube}
+          disabled={!youtubeUrl.trim() || youtubeLoading}
+          size="sm"
+        >
+          {youtubeLoading ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            '자막 추출'
+          )}
+        </Button>
       </div>
 
       {error && (
