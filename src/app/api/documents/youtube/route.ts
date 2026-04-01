@@ -2,6 +2,8 @@ import { createClient } from '@/lib/supabase/server';
 import { fetchYouTubeTranscript, extractVideoId } from '@/lib/rag/youtube';
 import { chunkText } from '@/lib/rag/chunker';
 import { embedBatch } from '@/lib/ai/embeddings';
+import { checkAndIncrementUsage, rateLimitResponse } from '@/lib/usage-tracker';
+import { validateYouTubeUrl } from '@/lib/validation';
 
 export async function POST(request: Request) {
   const supabase = await createClient();
@@ -17,9 +19,21 @@ export async function POST(request: Request) {
     return Response.json({ error: 'url과 courseId가 필요합니다' }, { status: 400 });
   }
 
+  // URL 화이트리스트 검증
+  const urlCheck = validateYouTubeUrl(url);
+  if (!urlCheck.valid) {
+    return Response.json({ error: urlCheck.error }, { status: 400 });
+  }
+
   const videoId = extractVideoId(url);
   if (!videoId) {
     return Response.json({ error: '유효한 YouTube URL이 아닙니다' }, { status: 400 });
+  }
+
+  // 일일 사용량 체크
+  const usage = await checkAndIncrementUsage(supabase as never, user.id, 'youtube');
+  if (!usage.allowed) {
+    return rateLimitResponse('YouTube', usage.current, usage.limit);
   }
 
   // 과목 소유권 확인

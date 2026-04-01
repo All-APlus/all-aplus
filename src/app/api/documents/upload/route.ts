@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server';
 import { parseDocument } from '@/lib/rag/parser';
 import { chunkText } from '@/lib/rag/chunker';
 import { embedBatch } from '@/lib/ai/embeddings';
+import { checkAndIncrementUsage, rateLimitResponse } from '@/lib/usage-tracker';
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 
@@ -27,6 +28,12 @@ export async function POST(request: Request) {
 
   if (!file || !courseId) {
     return Response.json({ error: 'file과 courseId가 필요합니다' }, { status: 400 });
+  }
+
+  // 일일 사용량 체크
+  const usage = await checkAndIncrementUsage(supabase as never, user.id, 'document');
+  if (!usage.allowed) {
+    return rateLimitResponse('문서 업로드', usage.current, usage.limit);
   }
 
   if (file.size > MAX_FILE_SIZE) {

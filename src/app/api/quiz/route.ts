@@ -1,10 +1,17 @@
 import { createClient } from '@/lib/supabase/server';
 import { createProvider, getAppDefaultKey } from '@/lib/ai/provider-factory';
+import { checkAndIncrementUsage, rateLimitResponse, logTokenUsage } from '@/lib/usage-tracker';
 
 export async function POST(request: Request) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return Response.json({ error: '인증 필요' }, { status: 401 });
+
+  // 일일 사용량 체크
+  const usage = await checkAndIncrementUsage(supabase as never, user.id, 'quiz');
+  if (!usage.allowed) {
+    return rateLimitResponse('퀴즈', usage.current, usage.limit);
+  }
 
   const { courseId, topic, count = 5, type = 'multiple_choice' } = await request.json();
   if (!courseId) return Response.json({ error: 'courseId 필요' }, { status: 400 });
@@ -69,6 +76,15 @@ ${context || '(등록된 자료 없음 — 일반적인 지식으로 출제)'}
       temperature: 0.7,
       maxTokens: 4096,
     });
+
+    // 토큰 기록
+    if (result.tokensUsed) {
+      logTokenUsage(supabase as never, user.id, {
+        provider: 'gemini', model: result.model,
+        inputTokens: result.tokensUsed.input, outputTokens: result.tokensUsed.output,
+        action: 'quiz',
+      }).catch(console.error);
+    }
 
     // JSON 파싱 (코드블록 제거)
     const cleaned = result.content.replace(/```json?\n?/g, '').replace(/```/g, '').trim();

@@ -1,6 +1,9 @@
 import { createClient } from '@/lib/supabase/server';
 import { createProvider, getAppDefaultKey } from '@/lib/ai/provider-factory';
 import { buildContext } from '@/lib/chat/context-builder';
+import { checkAndIncrementUsage, rateLimitResponse, logTokenUsage } from '@/lib/usage-tracker';
+import { validateMessage } from '@/lib/validation';
+import { logError } from '@/lib/logger';
 import type { ProviderName, StreamChunk } from '@/lib/ai/types';
 
 export async function POST(request: Request) {
@@ -12,6 +15,12 @@ export async function POST(request: Request) {
       return Response.json({ error: 'no user' }, { status: 401 });
     }
 
+    // 일일 사용량 체크
+    const usage = await checkAndIncrementUsage(supabase as never, user.id, 'chat');
+    if (!usage.allowed) {
+      return rateLimitResponse('채팅', usage.current, usage.limit);
+    }
+
     const body = await request.json();
     const { conversationId, message, provider: providerName = 'gemini' } = body as {
       conversationId: string;
@@ -21,6 +30,11 @@ export async function POST(request: Request) {
 
     if (!conversationId || !message) {
       return Response.json({ error: 'missing fields' }, { status: 400 });
+    }
+
+    const msgCheck = validateMessage(message);
+    if (!msgCheck.valid) {
+      return Response.json({ error: msgCheck.error }, { status: 400 });
     }
 
     const { data: conversation, error: convErr } = await supabase
@@ -88,6 +102,17 @@ export async function POST(request: Request) {
       context_chunks: contextChunks.length > 0 ? contextChunks : null,
     });
 
+    // 토큰 사용량 기록
+    if (result.tokensUsed) {
+      logTokenUsage(supabase as never, user.id, {
+        provider: providerName,
+        model: result.model,
+        inputTokens: result.tokensUsed.input,
+        outputTokens: result.tokensUsed.output,
+        action: 'chat',
+      }).catch(console.error);
+    }
+
     // 제목 자동 생성
     if (!conversation.title) {
       const title = message.length > 30 ? message.slice(0, 30) + '...' : message;
@@ -134,6 +159,7 @@ export async function POST(request: Request) {
       },
     });
   } catch (err) {
-    return Response.json({ error: String(err) }, { status: 500 });
+    logError(err, { action: 'chat', route: '/api/chat' });
+    return Response.json({ error: '채팅 처리 중 오류가 발생했습니다' }, { status: 500 });
   }
 }
