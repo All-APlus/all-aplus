@@ -2,8 +2,6 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 import { AIProvider, AIRequest, AIResponse } from '../types';
 import { withRetry } from '../retry';
 
-const GMS_BASE_URL = 'https://gms.ssafy.io/gmsapi/generativelanguage.googleapis.com';
-
 export class GeminiProvider implements AIProvider {
   name = 'gemini';
   private client: GoogleGenerativeAI;

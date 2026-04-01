@@ -1,4 +1,4 @@
-const GMS_OPENAI_BASE = 'https://gms.ssafy.io/gmsapi/api.openai.com/v1';
+const OPENAI_BASE = 'https://api.openai.com/v1';
 const EMBEDDING_MODEL = 'text-embedding-3-small';
 const MAX_BATCH_SIZE = 100;
 
@@ -7,9 +7,9 @@ interface EmbeddingResponse {
   usage: { prompt_tokens: number; total_tokens: number };
 }
 
-function getGmsKey(): string {
-  const key = process.env.GMS_KEY;
-  if (!key) throw new Error('GMS_KEY 환경변수가 설정되지 않았습니다');
+function getEmbeddingKey(): string {
+  const key = process.env.OPENAI_API_KEY;
+  if (!key) throw new Error('OPENAI_API_KEY 환경변수가 설정되지 않았습니다');
   return key;
 }
 
@@ -25,11 +25,11 @@ export async function embedBatch(texts: string[]): Promise<number[][]> {
 
   for (let i = 0; i < texts.length; i += MAX_BATCH_SIZE) {
     const batch = texts.slice(i, i + MAX_BATCH_SIZE);
-    const res = await fetch(`${GMS_OPENAI_BASE}/embeddings`, {
+    const res = await fetch(`${OPENAI_BASE}/embeddings`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${getGmsKey()}`,
+        Authorization: `Bearer ${getEmbeddingKey()}`,
       },
       body: JSON.stringify({
         model: EMBEDDING_MODEL,
