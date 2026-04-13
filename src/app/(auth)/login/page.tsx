@@ -16,6 +16,17 @@ import {
 } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 
+function translateAuthError(message: string): string {
+  const map: Record<string, string> = {
+    'Invalid login credentials': '이메일 또는 비밀번호가 올바르지 않습니다',
+    'Email not confirmed': '이메일 인증이 필요합니다. 받은편지함을 확인하세요',
+    'User already registered': '이미 가입된 이메일입니다',
+    'Signup requires a valid password': '유효한 비밀번호를 입력해주세요',
+    'Password should be at least 6 characters': '비밀번호는 6자 이상이어야 합니다',
+  };
+  return map[message] || message;
+}
+
 export default function LoginPage() {
   const router = useRouter();
   const [email, setEmail] = useState('');
@@ -35,7 +46,7 @@ export default function LoginPage() {
     });
 
     if (error) {
-      setError(error.message);
+      setError(translateAuthError(error.message));
       setLoading(false);
       return;
     }
@@ -124,7 +135,10 @@ export default function LoginPage() {
           Google로 로그인
         </Button>
       </CardContent>
-      <CardFooter className="justify-center">
+      <CardFooter className="flex-col gap-2">
+        <Link href="/reset-password" className="text-xs text-muted-foreground hover:text-indigo-600 hover:underline">
+          비밀번호를 잊으셨나요?
+        </Link>
         <p className="text-sm text-muted-foreground">
           계정이 없으신가요?{' '}
           <Link href="/signup" className="text-indigo-600 hover:underline font-medium">
