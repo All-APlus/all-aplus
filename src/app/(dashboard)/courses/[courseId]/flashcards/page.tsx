@@ -7,6 +7,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Loader2, Plus, RotateCcw, Layers } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { toast } from 'sonner';
 import type { FlashcardDeck, Flashcard } from '@/types/database';
 
 type ViewState = 'list' | 'generating' | 'study';
@@ -27,6 +28,17 @@ export default function FlashcardsPage() {
   const [cardIndex, setCardIndex] = useState(0);
   const [flipped, setFlipped] = useState(false);
   const [activeDeck, setActiveDeck] = useState<FlashcardDeck | null>(null);
+  const [docCount, setDocCount] = useState<number | null>(null);
+
+  const fetchDocCount = useCallback(async () => {
+    const res = await fetch(`/api/documents?courseId=${courseId}`);
+    if (res.ok) {
+      const docs = await res.json();
+      setDocCount(docs.length);
+    }
+  }, [courseId]);
+
+  useEffect(() => { fetchDocCount(); }, [fetchDocCount]);
 
   const fetchDecks = useCallback(async () => {
     const res = await fetch(`/api/flashcards?courseId=${courseId}`);
@@ -49,11 +61,11 @@ export default function FlashcardsPage() {
         await fetchDecks();
         await loadDeck(data.deckId);
       } else {
-        alert(data.error || '카드 생성 실패');
+        toast.error(data.error || '카드 생성 실패');
         setView('list');
       }
     } catch {
-      alert('생성 중 오류');
+      toast.error('생성 중 오류가 발생했습니다');
       setView('list');
     }
   };
@@ -109,13 +121,23 @@ export default function FlashcardsPage() {
                 onChange={(e) => setTopic(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && generateDeck()}
               />
-              <Button onClick={generateDeck} className="shrink-0 gap-1.5">
+              <Button onClick={generateDeck} className="shrink-0 gap-1.5" disabled={docCount === 0}>
                 <Plus className="h-4 w-4" />
                 카드 생성
               </Button>
             </div>
           </CardContent>
         </Card>
+
+        {docCount === 0 && (
+          <div className="mb-6 p-3 bg-amber-50 dark:bg-amber-950/30 text-amber-800 dark:text-amber-200 text-sm rounded-lg border border-amber-200 dark:border-amber-800">
+            먼저{' '}
+            <a href={`/courses/${courseId}/documents`} className="underline font-medium">
+              학습 자료를 업로드
+            </a>
+            하면 더 정확한 플래시카드를 생성할 수 있어요.
+          </div>
+        )}
 
         {decks.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 text-center">

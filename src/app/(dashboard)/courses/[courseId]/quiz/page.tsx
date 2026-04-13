@@ -14,6 +14,7 @@ import {
   ClipboardList,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { toast } from 'sonner';
 import type { Quiz, QuizQuestion } from '@/types/database';
 
 type QuizState = 'list' | 'generating' | 'solving' | 'result';
@@ -27,6 +28,17 @@ export default function QuizPage() {
   const [questions, setQuestions] = useState<QuizQuestion[]>([]);
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [result, setResult] = useState<{ score: number; total: number } | null>(null);
+  const [docCount, setDocCount] = useState<number | null>(null);
+
+  const fetchDocCount = useCallback(async () => {
+    const res = await fetch(`/api/documents?courseId=${courseId}`);
+    if (res.ok) {
+      const docs = await res.json();
+      setDocCount(docs.length);
+    }
+  }, [courseId]);
+
+  useEffect(() => { fetchDocCount(); }, [fetchDocCount]);
 
   const fetchQuizzes = useCallback(async () => {
     const res = await fetch(`/api/quiz?courseId=${courseId}`);
@@ -49,11 +61,11 @@ export default function QuizPage() {
         await fetchQuizzes();
         await loadQuiz(data.quizId);
       } else {
-        alert(data.error || '퀴즈 생성 실패');
+        toast.error(data.error || '퀴즈 생성 실패');
         setState('list');
       }
     } catch {
-      alert('퀴즈 생성 중 오류');
+      toast.error('퀴즈 생성 중 오류가 발생했습니다');
       setState('list');
     }
   };
@@ -121,13 +133,23 @@ export default function QuizPage() {
                 onChange={(e) => setTopic(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && generateQuiz()}
               />
-              <Button onClick={generateQuiz} className="shrink-0 gap-1.5">
+              <Button onClick={generateQuiz} className="shrink-0 gap-1.5" disabled={docCount === 0}>
                 <Plus className="h-4 w-4" />
                 퀴즈 생성
               </Button>
             </div>
           </CardContent>
         </Card>
+
+        {docCount === 0 && (
+          <div className="mb-6 p-3 bg-amber-50 dark:bg-amber-950/30 text-amber-800 dark:text-amber-200 text-sm rounded-lg border border-amber-200 dark:border-amber-800">
+            먼저{' '}
+            <a href={`/courses/${courseId}/documents`} className="underline font-medium">
+              학습 자료를 업로드
+            </a>
+            하면 더 정확한 퀴즈를 생성할 수 있어요.
+          </div>
+        )}
 
         {/* 퀴즈 목록 */}
         {quizzes.length === 0 ? (

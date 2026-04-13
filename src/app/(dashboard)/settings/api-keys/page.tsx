@@ -14,6 +14,7 @@ import {
   Plus,
   ShieldCheck,
 } from 'lucide-react';
+import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 
 interface ApiKeyInfo {
   id: string;
@@ -38,6 +39,7 @@ export default function ApiKeysPage() {
   const [newKey, setNewKey] = useState('');
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<{ id: string; provider: string } | null>(null);
 
   const fetchKeys = useCallback(async () => {
     const res = await fetch('/api/api-keys');
@@ -141,7 +143,7 @@ export default function ApiKeysPage() {
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => deleteKey(key.id)}
+                  onClick={() => setDeleteTarget({ id: key.id, provider: key.provider })}
                   className="h-8 w-8 p-0 text-muted-foreground hover:text-red-500"
                 >
                   <Trash2 className="h-4 w-4" />
@@ -200,6 +202,18 @@ export default function ApiKeysPage() {
           API 키 추가
         </Button>
       )}
+
+      <ConfirmDialog
+        open={deleteTarget !== null}
+        onOpenChange={(open) => { if (!open) setDeleteTarget(null); }}
+        title="API 키를 삭제하시겠습니까?"
+        description={`${deleteTarget?.provider} API 키를 삭제하면 해당 모델로 채팅할 수 없게 됩니다.`}
+        confirmLabel="삭제"
+        onConfirm={async () => {
+          if (deleteTarget) await deleteKey(deleteTarget.id);
+          setDeleteTarget(null);
+        }}
+      />
     </div>
   );
 }

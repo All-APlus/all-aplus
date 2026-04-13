@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useParams } from 'next/navigation';
 import { useDropzone } from 'react-dropzone';
 import { Card, CardContent } from '@/components/ui/card';
@@ -16,6 +16,8 @@ import {
   PlayCircle,
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
+import { ConfirmDialog } from '@/components/ui/confirm-dialog';
+import { toast } from 'sonner';
 import type { Document } from '@/types/database';
 
 const STATUS_MAP = {
@@ -38,6 +40,7 @@ export default function DocumentsPage() {
   const [error, setError] = useState<string | null>(null);
   const [youtubeUrl, setYoutubeUrl] = useState('');
   const [youtubeLoading, setYoutubeLoading] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null);
 
   const fetchDocuments = useCallback(async () => {
     const res = await fetch(`/api/documents?courseId=${courseId}`);
@@ -50,13 +53,23 @@ export default function DocumentsPage() {
     fetchDocuments();
   }, [fetchDocuments]);
 
-  // 처리 중인 문서가 있으면 폴링
+  // ��리 중인 문서가 있으��� 폴링 + 완료 시 toast
+  const prevDocsRef = useRef<Document[]>([]);
   useEffect(() => {
     const hasProcessing = documents.some(
       (d) => d.status === 'pending' || d.status === 'processing',
     );
-    if (!hasProcessing) return;
 
+    // 이전 상태와 비교해서 processing → completed 전환 감지
+    for (const doc of documents) {
+      const prev = prevDocsRef.current.find((d) => d.id === doc.id);
+      if (prev && (prev.status === 'pending' || prev.status === 'processing') && doc.status === 'completed') {
+        toast.success(`'${doc.file_name}' 처리 완료 — AI 질문에 반영됩니다`);
+      }
+    }
+    prevDocsRef.current = documents;
+
+    if (!hasProcessing) return;
     const interval = setInterval(fetchDocuments, 3000);
     return () => clearInterval(interval);
   }, [documents, fetchDocuments]);
@@ -252,7 +265,7 @@ export default function DocumentsPage() {
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => deleteDocument(doc.id)}
+                      onClick={() => setDeleteTarget({ id: doc.id, name: doc.file_name })}
                       className="h-8 w-8 p-0 text-muted-foreground hover:text-red-500"
                     >
                       <Trash2 className="h-4 w-4" />
@@ -264,6 +277,18 @@ export default function DocumentsPage() {
           })}
         </div>
       )}
+
+      <ConfirmDialog
+        open={deleteTarget !== null}
+        onOpenChange={(open) => { if (!open) setDeleteTarget(null); }}
+        title="자료를 삭제하시겠습니까?"
+        description={`'${deleteTarget?.name}'을(를) 삭제하면 관련 AI 학습 데이터도 함께 삭제됩니다. 이 작업은 되돌릴 수 없습니다.`}
+        confirmLabel="삭제"
+        onConfirm={async () => {
+          if (deleteTarget) await deleteDocument(deleteTarget.id);
+          setDeleteTarget(null);
+        }}
+      />
     </div>
   );
 }

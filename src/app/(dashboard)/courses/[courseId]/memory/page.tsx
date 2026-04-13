@@ -15,6 +15,7 @@ import {
   Plus,
   Loader2,
 } from 'lucide-react';
+import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import type { CourseMemory } from '@/types/database';
 
 const TYPE_CONFIG = {
@@ -34,6 +35,7 @@ export default function MemoryPage() {
   const [newNote, setNewNote] = useState('');
   const [adding, setAdding] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
 
   const fetchMemories = useCallback(async () => {
     const typeParam = filter !== 'all' ? `&type=${filter}` : '';
@@ -81,7 +83,7 @@ export default function MemoryPage() {
         <div>
           <h2 className="text-2xl font-bold">학습 기록</h2>
           <p className="text-sm text-muted-foreground mt-1">
-            AI가 대화에서 자동 추출한 학습 내용과 취약 영역
+            AI가 대화에서 자동 추출한 학습 내용과 취약 영역 — 여기 기록된 내용이 AI 답변에 자동 반영됩니다
           </p>
         </div>
       </div>
@@ -176,7 +178,10 @@ export default function MemoryPage() {
                         <span className="text-xs font-medium text-muted-foreground">
                           {config?.label}
                         </span>
-                        <span className="text-xs text-muted-foreground">
+                        <span
+                          className="text-xs text-muted-foreground cursor-help"
+                          title="AI가 판단한 학습 중요도입니다. 대화에서 자주 언급될수록 높아집니다."
+                        >
                           중요도 {Math.round(mem.importance * 100)}%
                         </span>
                       </div>
@@ -186,7 +191,7 @@ export default function MemoryPage() {
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => deleteMemory(mem.id)}
+                    onClick={() => setDeleteTarget(mem.id)}
                     className="h-8 w-8 p-0 text-gray-400 hover:text-red-500 shrink-0"
                   >
                     <Trash2 className="h-4 w-4" />
@@ -197,6 +202,18 @@ export default function MemoryPage() {
           })}
         </div>
       )}
+
+      <ConfirmDialog
+        open={deleteTarget !== null}
+        onOpenChange={(open) => { if (!open) setDeleteTarget(null); }}
+        title="학습 기록을 삭제하시겠습니까?"
+        description="이 학습 기록이 삭제되면 AI 답변에 더 이상 반영되지 않습니다."
+        confirmLabel="삭제"
+        onConfirm={async () => {
+          if (deleteTarget) await deleteMemory(deleteTarget);
+          setDeleteTarget(null);
+        }}
+      />
     </div>
   );
 }
