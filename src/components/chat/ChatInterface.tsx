@@ -33,6 +33,14 @@ export function ChatInterface({
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const [showTemplates, setShowTemplates] = useState(false);
 
+  const adjustTextareaHeight = () => {
+    const textarea = inputRef.current;
+    if (textarea) {
+      textarea.style.height = 'auto';
+      textarea.style.height = `${Math.min(textarea.scrollHeight, 144)}px`;
+    }
+  };
+
   useEffect(() => {
     scrollRef.current?.scrollTo({
       top: scrollRef.current.scrollHeight,
@@ -44,6 +52,11 @@ export function ChatInterface({
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       sendMessage();
+      setTimeout(() => {
+        if (inputRef.current) {
+          inputRef.current.style.height = 'auto';
+        }
+      }, 0);
     }
     if (e.key === 'k' && (e.ctrlKey || e.metaKey)) {
       e.preventDefault();
@@ -207,11 +220,15 @@ export function ChatInterface({
           <textarea
             ref={inputRef}
             value={input}
-            onChange={(e) => setInput(e.target.value)}
+            onChange={(e) => {
+              setInput(e.target.value);
+              adjustTextareaHeight();
+            }}
             onKeyDown={handleKeyDown}
             placeholder="메시지를 입력하세요... (Shift+Enter로 줄바꿈)"
             rows={1}
             className="flex-1 resize-none rounded-xl border bg-muted/50 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent dark:bg-muted/30"
+            style={{ maxHeight: '144px' }}
             disabled={isLoading}
           />
           {isLoading ? (
